@@ -1,0 +1,15 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+functions:
+  paulhub-auth:
+    lang: dockerfile
+    handler: ./paulhub-auth
+    image: paulhub-auth:latest
+    environment:
+        read_timeout: 60s
+        write_timeout: 60s
+    annotations:
+     com.openfaas.health.http.initialDelay: "20s"
+
