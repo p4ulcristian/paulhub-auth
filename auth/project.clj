@@ -24,6 +24,7 @@
                         "--initialize-at-build-time"
                         "--no-fallback"
                         "--no-server" ;; TODO issue with subsequent builds failing on same server
+                        "-J-Xms521m"
                         "--verbose"]
                  :name "server"}
   :main auth.core
