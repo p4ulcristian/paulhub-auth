@@ -5,8 +5,8 @@ provider:
 functions:
   paulhub-auth:
     lang: dockerfile
-    handler: ./paulhub-auth
-    image: paulhub-auth:latest
+    handler: ./auth
+    image: auth:latest
     environment:
         read_timeout: 60s
         write_timeout: 60s

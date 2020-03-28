@@ -1,15 +1,14 @@
-(ns paulhub-auth.core
+(ns auth.core
   (:require
-   [org.httpkit.server :as srv]
+   [org.httpkit.server :as server]
    [buddy.sign.jwt :as jwt]
    [buddy.core.keys :as keys]
    [hiccup.page :refer [include-js include-css html5]]
    [reitit.ring :as reitit-ring]
-   [ring.middleware.transit :refer [wrap-transit-params]]
    [ring.middleware.params :refer [wrap-params]]
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
    [ring.middleware.reload :refer [wrap-reload]])
-  (:import (sun.util.logging PlatformLogger PlatformLogger$Level))
+  ;(:import (sun.util.logging PlatformLogger PlatformLogger$Level))
   (:gen-class))
 
 (defonce users
@@ -25,7 +24,6 @@
 (def auth-public-key (keys/public-key "keys/auth-public-key.pem"))
 (def refresh-private-key (keys/private-key "keys/refresh-private-key.pem"))
 (def refresh-public-key (keys/public-key "keys/refresh-public-key.pem"))
-
 ;; Use them like plain secret password with hmac algorithms for sign
 
 
@@ -36,10 +34,6 @@
       (jwt/unsign signed-data public-key {:alg :es256}))
 
 
-(def signed-data (sign-data auth-private-key (first users)))
-(println "Hello there: "
-         signed-data)
-         ;(unsign-data auth-public-key signed-data))
 
 (defn make-tokens [payload]
       {:auth-token (sign-data auth-private-key payload)
@@ -61,10 +55,10 @@
            [:h2 "paulhub-auth"]
            [:h3 "Authentication api."]]))
 (defn request-wrap [status content-type body]
-        "wrap request with status and headers"
-        {:status status
-         :headers {"Content-Type" content-type}
-         :body body})
+       "wrap request with status and headers"
+       {:status status
+        :headers {"Content-Type" content-type}
+        :body body})
 (defn html-wrap [content]
         "Wrap Html"
         (request-wrap 200 "text/html" content))
@@ -93,10 +87,11 @@
            ["/public-key" {:get {:handler (fn [req] (text-wrap (str auth-public-key)))}}]
            ["/login" {:post {:handler (fn [req]
                                           (text-wrap
-                                            (str (let [tokens (make-tokens {:user "Paul" :permissions ["every" "thing"]})]
+                                            (str (let [tokens (make-tokens
+                                                                {:user "Paul" :permissions ["every" "thing"]})]
                                                     (add-token (:refresh-token tokens))
                                                     tokens))))}}]
-
+;
            ["/logout" {:get {:handler (fn [req]
                                           (text-wrap
                                             (remove-token (:refresh-token (:params req)))))}}]]])
@@ -105,15 +100,10 @@
         (reitit-ring/create-default-handler))
       {:middleware
        [wrap-keyword-params
-        wrap-params
-        #(wrap-transit-params % {:opts {}})
-        wrap-reload]}))
+        wrap-params]}))
+        ;wrap-reload]}))
 
 
-(def ^:private logger
-  "This throwaway static/compile-time invocation is a workaround for runtime
-   reflection of sun.util.logging.{LoggingSupport|PlatformLogger}."
-  (.isLoggable (PlatformLogger/getLogger "dummy") PlatformLogger$Level/ALL))
 (defn -main [& args]
   (println "Hello, Web!")
-  (srv/run-server app {:port 3000}))
+  (server/run-server app {:port 3000}))
