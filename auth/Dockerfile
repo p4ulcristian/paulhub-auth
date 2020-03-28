@@ -17,8 +17,6 @@ RUN chmod +x /usr/bin/lein
 RUN lein self-install
 RUN lein native-image
 
-
-
 FROM ubuntu
 WORKDIR /root/
 COPY --from=graal-builder /root/target/server /root/
